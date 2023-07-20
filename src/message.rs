@@ -5,6 +5,7 @@
 //! `MessageResponse` is received from the API on message creation, edit, and obtaining.
 
 use crate::embed::Embed;
+use crate::webhook::{Limit, WebhookError};
 use serde::{Deserialize, Serialize};
 
 /// Message received from the Discord API after message creation, edit, and obtaining.
@@ -41,39 +42,122 @@ pub struct MessageResponse {
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params>
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Default)]
 pub struct Message {
     /// Overrides the default username of the webhook.
-    pub username: String,
+    pub username: Option<String>,
     /// The message contents (up to 2000 characters)
-    pub content: String,
+    pub content: Option<String>,
     /// Embedded `rich` content, an array of up to 10 embeds.
     pub embeds: Vec<Embed>,
 }
 
 impl Message {
-    /// Create a new message to be sent to the API.
-    ///
-    /// # Arguments
-    ///
-    /// * `username` - Overrides the webhook's username.
-    /// * `content` - Message to be sent (up to 2000 characters)
-    pub fn new(username: &str, content: &str) -> Self {
+    /// Create a new message to be sent to the API. This requires either an embed or content to be
+    /// set.
+    pub fn new() -> Self {
         Self {
-            username: username.to_string(),
-            content: content.to_string(),
             embeds: vec![],
+            ..Default::default()
         }
     }
 
-    /// Creates a new embed to be added to the list of embeds to be sent.
+    /// Validates the enter embed does not exceed the maxmium lengths. Returns the total size for
+    /// all embeds within the message.
+    pub fn validate(&self) -> Result<usize, WebhookError> {
+        let too_big = |name: &str, size: usize, max: usize| -> WebhookError {
+            WebhookError::TooBig(name.to_string(), size, max)
+        };
+
+        // Check if the username is too large.
+        match &self.username {
+            Some(value) => match value.len() {
+                0..=Limit::USERNAME => (),
+                _ => return Err(too_big("username", value.len(), Limit::USERNAME)),
+            },
+            None => (),
+        };
+
+        // Check if the content is too large.
+        match &self.content {
+            Some(value) => match value.len() {
+                0..=Limit::CONTENT => (),
+                _ => return Err(too_big("content", value.len(), Limit::CONTENT)),
+            },
+            None => (),
+        };
+
+        // Check the total size of all embeds attached.
+        let mut total: usize = 0;
+        for embed in self.embeds.iter() {
+            total += match embed.validate() {
+                Ok(value) => value,
+                Err(error) => return Err(error),
+            }
+        }
+
+        // Verify the total is less than embed max.
+        match total {
+            0..=Limit::EMBED_TOTAL => Ok(total),
+            _ => Err(too_big("embed", total, Limit::EMBED_TOTAL)),
+        }
+    }
+
+    /// Overrides the username for the message. This will throw a `WebhookError::TooBig` if the
+    /// username exceeds the maximum length (currently 80 characters, see: `Limit::USERNAME`).
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - Username to be display for the message, maximum length is `Limit::USERNAME`
+    pub fn username(&mut self, username: &str) -> Result<(), WebhookError> {
+        // Assign, but will not send if it is an error.
+        self.username = Some(username.to_string());
+
+        // Throw an error if it is too long.
+        if username.len() > Limit::USERNAME {
+            return Err(WebhookError::TooBig(
+                "username".to_string(),
+                username.len(),
+                Limit::USERNAME,
+            ));
+        };
+
+        Ok(())
+    }
+
+    /// Adds content to the message. This will throw a `WebhookError::TooBig` if the content
+    /// exceeds the maximum length (currently 2000 characters).
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - String of content to be sent, maximum length is `Limit::CONTENT`
+    pub fn content(&mut self, content: &str) -> Result<(), WebhookError> {
+        // Assign, but will not send if it is an error.
+        self.content = Some(content.to_string());
+
+        // Throw an error if it is too long.
+        if content.len() > Limit::CONTENT {
+            return Err(WebhookError::TooBig(
+                "content".to_string(),
+                content.len(),
+                Limit::CONTENT,
+            ));
+        };
+
+        Ok(())
+    }
+
+    /// Creates a new embed to be added to the list of embeds to be sent. If you attempt to add
+    /// more then 10 embeds, it will fail and only keep the first 10.
     pub fn embed<Func>(&mut self, func: Func) -> &mut Self
     where
         Func: Fn(&mut Embed) -> &mut Embed,
     {
-        let mut embed = Embed::new();
-        func(&mut embed);
-        self.embeds.push(embed);
+        if self.embeds.len() < Limit::EMBEDS {
+            let mut embed = Embed::new();
+            func(&mut embed);
+            self.embeds.push(embed);
+        }
 
         self
     }

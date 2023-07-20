@@ -10,6 +10,9 @@ use hyper::{Body, Method, Request, StatusCode};
 use hyper_tls::HttpsConnector;
 use std::fmt;
 
+/// Base URI for the Webhook API.
+const ROOT_URI: &str = "https://discord.com/api/v10/webhooks";
+
 /// Result is used to return either objects or errors.
 pub type Result<T> = std::result::Result<T, WebhookError>;
 
@@ -23,6 +26,8 @@ pub enum WebhookError {
     Unknown(String),
     /// Unable to parse an object received from the API.
     BadParse(String),
+    /// Content or Embed character count is too large.
+    TooBig(String, usize, usize),
 }
 
 impl fmt::Display for WebhookError {
@@ -32,14 +37,50 @@ impl fmt::Display for WebhookError {
             WebhookError::BadParse(value) => write!(f, "bad parse: {}", value),
             WebhookError::Unknown(value) => write!(f, "unknown: {}", value),
             WebhookError::NoContent => f.write_str("no content."),
+            WebhookError::TooBig(value, size, max) => write!(
+                f,
+                "{} exceeded max character count, {} of {}",
+                value, size, max
+            ),
         }
     }
 }
 
-/// Base URI for the Webhook API.
-const ROOT_URI: &str = "https://discord.com/api/v10/webhooks";
+/// Collection of Limits enforced by the Discord API.
+///
+/// ## References / Documentation
+///
+/// <https://discord.com/developers/docs/resources/channel#embed-object-embed-limits>
+/// <https://discord.com/developers/docs/resources/channel#create-message>
+pub struct Limit;
+impl Limit {
+    /// Maximum amount of embeds allowed on a single message.
+    pub const EMBEDS: usize = 10;
+    /// Maximum amount of fields on a single embed.
+    pub const FIELDS: usize = 25;
 
-/// Webhook  that is responsible for making requests to the Discord API.
+    /// Maximum length of a username override for a message.
+    pub const USERNAME: usize = 80;
+    /// Maximum length of content for a message.
+    pub const CONTENT: usize = 2000;
+
+    /// Maximum length of the author name on an embed.
+    pub const AUTHOR_NAME: usize = 256;
+    /// Maximum length of the title on an embed.
+    pub const TITLE: usize = 256;
+    /// Maximum length of the description on an embed.
+    pub const DESCRIPTION: usize = 4096;
+    /// Maximum length of field name on an embed.
+    pub const FIELD_NAME: usize = 256;
+    /// Maximum length of field value on an embed.
+    pub const FIELD_VALUE: usize = 1024;
+    /// Maximum length of footer text on an embed.
+    pub const FOOTER_TEXT: usize = 2048;
+    /// Maximum total characters for an embed.
+    pub const EMBED_TOTAL: usize = 6000;
+}
+
+/// Webhook is a client that is responsible for making requests to the Discord API.
 /// Requires a Webhook ID and Token. You can find these requirements in the URL provided for the
 /// webhook.
 ///
@@ -147,6 +188,12 @@ impl Webhook {
     ///
     /// <https://discord.com/developers/docs/resources/webhook#execute-webhook>
     pub async fn create(&self, message: &Message) -> Result<MessageResponse> {
+        // Validate the message.
+        match message.validate() {
+            Ok(_) => (),
+            Err(error) => return Err(error),
+        };
+
         // '?wait=true' tells the API to return the message with the newly created ID.
         let url = format!("{}?wait=true", self.url());
 
@@ -194,6 +241,12 @@ impl Webhook {
     ///
     /// <https://discord.com/developers/docs/resources/webhook#edit-webhook-message>
     pub async fn edit(&self, id: &str, message: &Message) -> Result<MessageResponse> {
+        // Validate the message.
+        match message.validate() {
+            Ok(_) => (),
+            Err(error) => return Err(error),
+        }
+
         // Path to the actual message being modified.
         let url = format!("{}/messages/{}", self.url(), id);
 
@@ -201,7 +254,7 @@ impl Webhook {
         match self.send(Method::PATCH, &url, Some(message)).await {
             Ok(value) => match serde_json::from_str(&value) {
                 Ok(resp) => Ok(resp),
-                Err(_) => Err(WebhookError::BadParse("response".to_string())),
+                Err(_) => Err(WebhookError::BadParse("edit response".to_string())),
             },
             Err(error) => Err(error),
         }
@@ -216,15 +269,15 @@ impl Webhook {
     /// ## References / Documentation
     ///
     /// <https://discord.com/developers/docs/resources/webhook#delete-webhook-message>
-    pub async fn delete(&self, id: &str) -> Result<bool> {
+    pub async fn delete(&self, id: &str) -> Result<()> {
         // Path to the actual message being modified.
         let url = format!("{}/messages/{}", self.url(), id);
 
         // Send a DELETE request to remove an existing Webhook message.
         match self.send(Method::DELETE, &url, None).await {
-            Ok(_) => Ok(true),
+            Ok(_) => Ok(()),
             Err(error) => match error {
-                WebhookError::NoContent => Ok(true),
+                WebhookError::NoContent => Ok(()),
                 _ => Err(error),
             },
         }

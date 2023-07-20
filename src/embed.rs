@@ -5,6 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::webhook::{Limit, WebhookError};
+
 /// Author information for the embed.
 ///
 /// ## References / Documentation
@@ -92,6 +94,8 @@ pub struct EmbedProvider {
 /// <https://discord.com/developers/docs/resources/channel#embed-object>
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Embed {
+    /// Author information.
+    pub author: Option<EmbedAuthor>,
     /// Title of the embed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
@@ -103,6 +107,8 @@ pub struct Embed {
     pub timestamp: Option<String>,
     /// color code of the embed.
     pub color: Option<u32>,
+    /// Fields information.
+    pub fields: Vec<EmbedField>,
     /// Footer information.
     pub footer: Option<EmbedFooter>,
     /// Image information.
@@ -113,10 +119,6 @@ pub struct Embed {
     pub video: Option<EmbedMedia>,
     /// Provider information.
     pub provider: Option<EmbedProvider>,
-    /// Author information.
-    pub author: Option<EmbedAuthor>,
-    /// Fields information.
-    pub fields: Vec<EmbedField>,
 }
 
 impl Embed {
@@ -125,6 +127,79 @@ impl Embed {
         Self {
             fields: vec![],
             ..Default::default()
+        }
+    }
+
+    /// Validates the Embed does not exceed the maxmium lengths. Returns to the total amount of
+    /// characters within the embed.
+    pub fn validate(&self) -> Result<usize, WebhookError> {
+        let too_big = |name: &str, size: usize, max: usize| -> WebhookError {
+            WebhookError::TooBig(name.to_string(), size, max)
+        };
+
+        let mut total: usize = 0;
+
+        // Check if the author is too large.
+        let author = match &self.author {
+            Some(value) => value.name.len(),
+            None => 0,
+        };
+        total += match author {
+            0..=Limit::AUTHOR_NAME => author,
+            _ => return Err(too_big("author", author, Limit::AUTHOR_NAME)),
+        };
+
+        // Check if the title is too large.
+        let title = match &self.title {
+            Some(value) => value.len(),
+            None => 0,
+        };
+        total += match title {
+            0..=Limit::TITLE => title,
+            _ => return Err(too_big("title", title, Limit::TITLE)),
+        };
+
+        // Check if the description is too large.
+        let desc = match &self.description {
+            Some(value) => value.len(),
+            None => 0,
+        };
+        total += match desc {
+            0..=Limit::DESCRIPTION => desc,
+            _ => return Err(too_big("description", desc, Limit::DESCRIPTION)),
+        };
+
+        // Check if the footer is too large.
+        let footer = match &self.footer {
+            Some(value) => value.text.len(),
+            None => 0,
+        };
+        total += match footer {
+            0..=Limit::FOOTER_TEXT => footer,
+            _ => return Err(too_big("footer", footer, Limit::FOOTER_TEXT)),
+        };
+
+        // Check all of the fields.
+        for field in self.fields.iter() {
+            // Check if the name is too large.
+            let name = field.name.len();
+            total += match name {
+                0..=Limit::FIELD_NAME => name,
+                _ => return Err(too_big("field name", name, Limit::FIELD_NAME)),
+            };
+
+            // Check if the value is too large.
+            let value = field.value.len();
+            total += match value {
+                0..=Limit::FIELD_VALUE => value,
+                _ => return Err(too_big("field value", value, Limit::FIELD_VALUE)),
+            };
+        }
+
+        // Verify the total is less than embed max.
+        match total {
+            0..=Limit::EMBED_TOTAL => Ok(total),
+            _ => Err(too_big("embed", total, Limit::EMBED_TOTAL)),
         }
     }
 

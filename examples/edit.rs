@@ -12,7 +12,8 @@
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
 use std::{env, process};
-use yadwh::{message::Message, Webhook};
+use yadwh::message::Message;
+use yadwh::webhook::Webhook;
 
 #[tokio::main]
 async fn main() {
@@ -30,7 +31,18 @@ async fn main() {
     let message_id: String = args[3].to_string();
 
     // Message to be sent.
-    let mut message = Message::new("Webhook Example", "Below are updated attached embeds.");
+    let mut message = Message::new();
+
+    // Override the username. Ignoring error check for exceeding length.
+    message.username("Webhook Example").ok();
+
+    // Set the content, check to make sure the length is within limits.
+    match message.content("New content portion of the message.") {
+        Ok(_) => (),
+        Err(error) => println!("{}", error),
+    };
+
+    // Create an embed for the message.
     message.embed(|embed| {
         embed
             .color("#cba6f7")

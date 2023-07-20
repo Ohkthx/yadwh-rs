@@ -12,7 +12,7 @@
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
 use std::{env, process};
-use yadwh::Webhook;
+use yadwh::webhook::Webhook;
 
 #[tokio::main]
 async fn main() {
