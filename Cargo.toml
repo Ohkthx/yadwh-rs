@@ -8,7 +8,10 @@ readme = "README.md"
 homepage = "https://github.com/Ohkthx/yadwh-rs"
 repository = "https://github.com/Ohkthx/yadwh-rs"
 keywords = ["discord", "webhook", "asynchronous", "notify", "notifications"]
-exclude = ["commit_msg", "target/"]
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
 
 [features]
 default = []
