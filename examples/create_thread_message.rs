@@ -1,35 +1,37 @@
-//! # Create Message Example
+//! # Create Thread Message Example
 //!
-//! This example demonstrates how to create a discord webhook message that originated from a
-//! specific Webhook ID and Token. The arguments provided should be provided exactly
-//! in that order.
+//! This example demonstrates how to create a discord webhook message inside a Forum Channels
+//! thread that originated from a specific Webhook ID and Token. The arguments provided should
+//! be provided exactly in that order.
 //!
 //! ## Example
 //!
-//! cargo run --example create --features examples -- 00001111 aaaabbbb
+//! cargo run --example create_thread_message --features examples -- 00001111 aaaabbbb 22223333
 //! where:
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
+//!     Thread ID:  22223333
 use std::{env, process};
-use yadwh::message::Message;
-use yadwh::webhook::Webhook;
+use yadwh::message::MessageBuilder;
+use yadwh::webhook::WebhookAPI;
 
 #[tokio::main]
 async fn main() {
     // Verify enough arguments were passed.
     let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
+    if args.len() < 4 {
         println!("error:  not enough arguments supplied.");
-        println!("usage:  create [webhook_id] [token]");
+        println!("usage:  create_message [webhook_id] [token] [thread_id]");
         process::exit(-1);
     }
 
     // Parse the arguments.
     let webhook_id: String = args[1].to_string();
     let token: String = args[2].to_string();
+    let thread_id: String = args[3].to_string();
 
     // Message to be sent.
-    let mut message = Message::new();
+    let mut message = MessageBuilder::new();
 
     // Override the username. Ignoring error check for exceeding length.
     message.username("Webhook Example").ok();
@@ -56,8 +58,8 @@ async fn main() {
 
     // Create the message.
     println!("Creating message.");
-    let webhook = Webhook::new(&webhook_id, &token);
-    match webhook.create(&message).await {
+    let webhook = WebhookAPI::new(&webhook_id, &token);
+    match webhook.message.create(&message, Some(&thread_id)).await {
         Ok(resp) => println!("\nMessage created:\n{:#?}", resp),
         Err(error) => println!("Error while creating: {}", error),
     }

@@ -11,7 +11,7 @@
 
 # Yet Another Discord Webhook
 
-The objective of this crate is to grant asynchronous access to the **Discord Webhook** API. Beyond creating webhook messages, this crate also allows for users to edit, obtain, and delete existing messages created by the webhook. There are several other crates that exist with similar functionality, however, I felt they were with missing features or not updated.
+The objective of this crate is to grant asynchronous access to the **Discord Webhook** API. Beyond managing webhooks, this crate also allows for users to edit, obtain, and delete existing messages created by the webhook. There are several other crates that exist with similar functionality, however, I felt they were with missing features or not updated.
 
 Contributions are encouraged! The API reference can be seen at [Discord Webhook API](https://discord.com/developers/docs/resources/webhook). If you wish to add this to your project, either use `cargo add yadwh` or add the following line to your dependencies section in **Cargo.toml**:
 
@@ -23,7 +23,8 @@ yadwh = { git = "https://github.com/ohkthx/yadwh-rs" }
 ## Features
 - Asynchronous.
 - Easy-to-use Webhook Client.
-- Create, Edit, Get, and Delete Webhook messages.
+- Get, Edit, and Delete Webhooks.
+- Create, Get, Edit, and Delete Webhook messages.
 
 ## Documentation
 
@@ -31,37 +32,47 @@ Most of the documentation can be accessed by clicking the following link: [docs.
 
 ### Covered API requests
 
-Client: `use yadwh::webhook::Webhook` or `use yadwh::Webhook`
+Client: `use yadwh::webhook::WebhookAPI` or `use yadwh::WebhookAPI`, create with `WebhookAPI::new()`
 
-- **Creating Message**: `Webhook::create`
-- **Deleting Message**: `Webhook::delete`
-- **Editing Message**: `Webhook::edit`
-- **Getting Message**: `Webhook::get`
-
+**Webhook API**:
+- **Get Webhook**: `WebhookAPI.get`
+- **Modify Webhook**: `WebhookAPI.modify`
+- **Delete Webhook**: `WebhookAPI.delete`
+- **MessageAPI**: `WebhookAPI.message`
+  - **Create Message**: `WebhookAPI.message.create`
+  - **Get Message**: `WebhookAPI.message.get`
+  - **Edit Message**: `WebhookAPI.message.edit`
+  - **Delete Message**: `WebhookAPI.message.delete`
 
 ### TODO
 
-- Expand on the Webhook Object's fields that is received after `creating`, `editing`, and `getting`. The struct in question is `WebhookResponse`.
 - Support files / attachments.
-- Validate Content and Embed size.
-- Validate Message requirements (content, file, or embed)
-- Additional Webhook Specific actions
-  - [Get Webhook](https://discord.com/developers/docs/resources/webhook#get-webhook-with-token) Returns a Webhook Object.
-  - [Modify Webhook](https://discord.com/developers/docs/resources/webhook#get-webhook-with-token): Returns a Webhook Object.
-  - [Delete Webhook](https://discord.com/developers/docs/resources/webhook#get-webhook-with-token): Returns `204 No Content`.
 
 ## Examples
 
 Check above in the **Covered API requests** section for possibly covered examples. **NOTE FOR BELOW**: `AAAABBBB` is the Webhook ID, `11112222` is the Webhook Token, and `CCCCDDDD` is the Message ID for some requests. 
 
-- **Creating**: [create.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/create.rs)
-  - Try with: `cargo run --example create --features examples -- AAAABBBB 11112222`
-- **Editing**: [edit.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/edit.rs)
-  - Try with: `cargo run --example edit --features examples -- AAAABBBB 11112222 CCCCDDDD`
-- **Getting**: [get.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/get.rs)
-  - Try with: `cargo run --example get --features examples -- AAAABBBB 11112222 CCCCDDDD`
-- **Deleting**: [delete.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/delete.rs)
-  - Try with: `cargo run --example delete --features examples -- AAAABBBB 11112222 CCCCDDDD`
+### WebhookAPI
+
+- **Get Webhook**: [get_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/get_webhook.rs)
+  - Try with: `cargo run --example get_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+- **Modify Webhook**: [modify_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/modify_webhook.rs)
+  - Try with: `cargo run --example modify_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+- **Delete Webhook**: [delete_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/delete_webhook.rs)
+  - Try with: `cargo run --example delete_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+
+### MessageAPI
+
+- **Create Message**: [create_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/create_message.rs)
+  - Try with: `cargo run --example create_message --features examples -- AAAABBBB 11112222`
+- **Create Thread Message (Forum Channel)**: [create_thread_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/create_thread_message.rs)
+  - Try with: `cargo run --example create_thread_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+- **Get Message**: [get_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/get_message.rs)
+  - Try with: `cargo run --example get_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+- **Edit Message**: [edit_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/edit_message.rs)
+  - Try with: `cargo run --example edit_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+- **Delete Message**: [delete_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/delete_message.rs)
+  - Try with: `cargo run --example delete_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
 
 ## Tips Appreciated!
 

@@ -6,14 +6,14 @@
 //!
 //! ## Example
 //!
-//! cargo run --example edit --features examples -- 00001111 aaaabbbb 22223333
+//! cargo run --example edit_message --features examples -- 00001111 aaaabbbb 22223333
 //! where:
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
 use std::{env, process};
-use yadwh::message::Message;
-use yadwh::webhook::Webhook;
+use yadwh::message::MessageBuilder;
+use yadwh::webhook::WebhookAPI;
 
 #[tokio::main]
 async fn main() {
@@ -21,7 +21,7 @@ async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 4 {
         println!("error:  not enough arguments supplied.");
-        println!("usage:  edit [webhook_id] [token] [message_id]");
+        println!("usage:  edit_message [webhook_id] [token] [message_id]");
         process::exit(-1);
     }
 
@@ -30,20 +30,35 @@ async fn main() {
     let token: String = args[2].to_string();
     let message_id: String = args[3].to_string();
 
-    // Message to be sent.
-    let mut message = Message::new();
+    // Get the original message.
+    println!("Obtaining message {}.", message_id);
+    let webhook = WebhookAPI::new(&webhook_id, &token);
+    let message = match webhook.message.get(&message_id).await {
+        Ok(resp) => {
+            println!("Message obtained.");
+            resp
+        }
+        Err(error) => {
+            println!("Error while obtaining: {}", error);
+            process::exit(-1);
+        }
+    };
+
+    // Create a builder from the message to make changes.
+    let mut builder = MessageBuilder::from(&message);
 
     // Override the username. Ignoring error check for exceeding length.
-    message.username("Webhook Example").ok();
+    builder.username("Webhook Example").ok();
 
     // Set the content, check to make sure the length is within limits.
-    match message.content("New content portion of the message.") {
+    match builder.content("New content portion of the message.") {
         Ok(_) => (),
         Err(error) => println!("{}", error),
     };
 
     // Create an embed for the message.
-    message.embed(|embed| {
+    builder.embeds = vec![];
+    builder.embed(|embed| {
         embed
             .color("#cba6f7")
             .author("Author Changed Here", None, None, None)
@@ -58,8 +73,8 @@ async fn main() {
 
     // Edit the message.
     println!("Editing message {}.", message_id);
-    let webhook = Webhook::new(&webhook_id, &token);
-    match webhook.edit(&message_id, &message).await {
+    let webhook = WebhookAPI::new(&webhook_id, &token);
+    match webhook.message.edit(&message_id, &builder).await {
         Ok(resp) => println!("\nMessage edited:\n{:#?}", resp),
         Err(error) => println!("Error while editing: {}", error),
     }

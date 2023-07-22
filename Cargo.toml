@@ -1,7 +1,7 @@
 [package]
 name = "yadwh"
 license = "MIT"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Yet Another Discord Webhook Crate"
 readme = "README.md"
@@ -20,23 +20,43 @@ full = [
 examples = ["dep:tokio"]
 
 [[example]]
-name = "create"
-path = "examples/create.rs"
+name = "get_webhook"
+path = "examples/get_webhook.rs"
 required-features = ["examples"]
 
 [[example]]
-name = "get"
-path = "examples/get.rs"
+name = "modify_webhook"
+path = "examples/modify_webhook.rs"
 required-features = ["examples"]
 
 [[example]]
-name = "edit"
-path = "examples/edit.rs"
+name = "delete_webhook"
+path = "examples/delete_webhook.rs"
 required-features = ["examples"]
 
 [[example]]
-name = "delete"
-path = "examples/delete.rs"
+name = "create_message"
+path = "examples/create_message.rs"
+required-features = ["examples"]
+
+[[example]]
+name = "create_thread_message"
+path = "examples/create_thread_message.rs"
+required-features = ["examples"]
+
+[[example]]
+name = "get_message"
+path = "examples/get_message.rs"
+required-features = ["examples"]
+
+[[example]]
+name = "edit_message"
+path = "examples/edit_message.rs"
+required-features = ["examples"]
+
+[[example]]
+name = "delete_message"
+path = "examples/delete_message.rs"
 required-features = ["examples"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

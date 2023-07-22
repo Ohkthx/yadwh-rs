@@ -6,13 +6,13 @@
 //!
 //! ## Example
 //!
-//! cargo run --example get --features examples -- 00001111 aaaabbbb 22223333
+//! cargo run --example get_message --features examples -- 00001111 aaaabbbb 22223333
 //! where:
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
 use std::{env, process};
-use yadwh::webhook::Webhook;
+use yadwh::webhook::WebhookAPI;
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +20,7 @@ async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 4 {
         println!("error:  not enough arguments supplied.");
-        println!("usage:  get [webhook_id] [token] [message_id]");
+        println!("usage:  get_message [webhook_id] [token] [message_id]");
         process::exit(-1);
     }
 
@@ -31,8 +31,8 @@ async fn main() {
 
     // Get the message.
     println!("Obtaining message {}.", message_id);
-    let webhook = Webhook::new(&webhook_id, &token);
-    match webhook.get(&message_id).await {
+    let webhook = WebhookAPI::new(&webhook_id, &token);
+    match webhook.message.get(&message_id).await {
         Ok(resp) => println!("\nMessage obtained:\n{:#?}", resp),
         Err(error) => println!("Error while obtaining: {}", error),
     }

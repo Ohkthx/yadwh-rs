@@ -3,24 +3,26 @@
 //! `embed` contains the Embed struct used to be sent with messages to the Discord API. Up to 10
 //! embeds can be sent per message.
 
+use crate::client::{Limit, WebhookError};
 use serde::{Deserialize, Serialize};
-
-use crate::webhook::{Limit, WebhookError};
 
 /// Author information for the embed.
 ///
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-author-structure>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EmbedAuthor {
     /// Name of the author.
     pub name: String,
     /// URL of the author (only supports http(s)).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     /// URL to the icon for the author (only supports http(s) and attachments).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_url: Option<String>,
     /// Proxy URL to the icon for the author.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub proxy_icon_url: Option<String>,
 }
 
@@ -29,13 +31,14 @@ pub struct EmbedAuthor {
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-field-structure>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EmbedField {
     /// Name of the field.
     pub name: String,
     /// Value of the field.
     pub value: String,
     /// Whether or not this field should display inline.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline: Option<bool>,
 }
 
@@ -44,13 +47,15 @@ pub struct EmbedField {
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-footer-structure>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EmbedFooter {
     /// Footer text.
     pub text: String,
     /// URL of the footer icon (only supports http(s) and attachments)
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_url: Option<String>,
     /// A proxied URL of the footer icon.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub proxy_icon_url: Option<String>,
 }
 
@@ -61,15 +66,19 @@ pub struct EmbedFooter {
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-thumbnail-structure>
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-video-structure>
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-image-structure>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EmbedMedia {
     /// Source URL of thumbnail (only supports http(s) and attachments)
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     /// A proxied URL of the media.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub proxy_url: Option<String>,
     /// Height of the media.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub height: Option<u32>,
     /// Width of the media.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub width: Option<u32>,
 }
 
@@ -78,11 +87,13 @@ pub struct EmbedMedia {
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/channel#embed-object-embed-provider-structure>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EmbedProvider {
     /// Name of the provider.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// URL of the provider.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
 }
 
@@ -92,32 +103,42 @@ pub struct EmbedProvider {
 /// ## References / Documentation
 ///
 /// <https://discord.com/developers/docs/resources/channel#embed-object>
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Embed {
     /// Author information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<EmbedAuthor>,
     /// Title of the embed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     /// Description of the embed.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// URL of the embed.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     /// Timestamp of the embed content.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub timestamp: Option<String>,
     /// color code of the embed.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<u32>,
     /// Fields information.
     pub fields: Vec<EmbedField>,
     /// Footer information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub footer: Option<EmbedFooter>,
     /// Image information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<EmbedMedia>,
     /// Thumbnail information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub thumbnail: Option<EmbedMedia>,
     /// Video information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub video: Option<EmbedMedia>,
     /// Provider information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub provider: Option<EmbedProvider>,
 }
 
