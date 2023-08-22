@@ -1,25 +1,18 @@
 [package]
 name = "yadwh"
 license = "MIT"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Yet Another Discord Webhook Crate"
 readme = "README.md"
 homepage = "https://github.com/Ohkthx/yadwh-rs"
 repository = "https://github.com/Ohkthx/yadwh-rs"
 keywords = ["discord", "webhook", "asynchronous", "notify", "notifications"]
-include = [
-    "**/*.rs",
-    "Cargo.toml",
-]
+include = ["**/*.rs"]
 
 [features]
 default = []
-
-full = [
-    "examples",
-]
-
+full = ["examples"]
 examples = ["dep:tokio"]
 
 [[example]]

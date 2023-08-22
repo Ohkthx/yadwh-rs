@@ -55,24 +55,24 @@ Check above in the **Covered API requests** section for possibly covered example
 ### WebhookAPI
 
 - **Get Webhook**: [get_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/get_webhook.rs)
-  - Try with: `cargo run --example get_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example get_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
 - **Modify Webhook**: [modify_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/modify_webhook.rs)
-  - Try with: `cargo run --example modify_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example modify_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
 - **Delete Webhook**: [delete_webhook.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/delete_webhook.rs)
-  - Try with: `cargo run --example delete_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example delete_webhook --features examples -- AAAABBBB 11112222 CCCCDDDD`
 
 ### MessageAPI
 
 - **Create Message**: [create_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/create_message.rs)
-  - Try with: `cargo run --example create_message --features examples -- AAAABBBB 11112222`
+  - `cargo run --example create_message --features examples -- AAAABBBB 11112222`
 - **Create Thread Message (Forum Channel)**: [create_thread_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/create_thread_message.rs)
-  - Try with: `cargo run --example create_thread_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example create_thread_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
 - **Get Message**: [get_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/get_message.rs)
-  - Try with: `cargo run --example get_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example get_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
 - **Edit Message**: [edit_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/edit_message.rs)
-  - Try with: `cargo run --example edit_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example edit_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
 - **Delete Message**: [delete_message.rs](https://github.com/Ohkthx/yadwh-rs/tree/main/examples/delete_message.rs)
-  - Try with: `cargo run --example delete_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
+  - `cargo run --example delete_message --features examples -- AAAABBBB 11112222 CCCCDDDD`
 
 ## Tips Appreciated!
 

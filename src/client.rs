@@ -131,7 +131,6 @@ impl Client {
     /// * `body` - HTTP Body to send to the API (used for POST and PATCH.)
     pub async fn send(&self, method: Method, endpoint: &str, body: Body) -> Result<String> {
         let url = format!("{}{}", self.url(), endpoint);
-        println!("url: {}", url);
 
         // Build the request for the Method.
         let req = Request::builder()
