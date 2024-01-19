@@ -16,6 +16,7 @@ pub(crate) const ROOT_URI: &str = "https://discord.com/api/v10/webhooks";
 pub type Result<T> = std::result::Result<T, WebhookError>;
 
 /// Enum for handling the expected errors for processing webhook messages.
+#[derive(Debug)]
 pub enum WebhookError {
     /// Non-200 status obtained from the API.
     BadStatus(String),
@@ -23,7 +24,7 @@ pub enum WebhookError {
     NoContent,
     /// Unknown error, details provided.
     Unknown(String),
-    /// Unable to parse an object received from the API.
+    /// Unable to parse an object.
     BadParse(String),
     /// Content or Embed character count is too large.
     TooBig(String, usize, usize),
@@ -93,9 +94,9 @@ impl Limit {
 #[derive(Debug, Clone)]
 pub(crate) struct Client {
     /// ID of the Webhook.
-    pub id: String,
+    pub(crate) id: String,
     /// Token for the Webhook.
-    pub token: String,
+    pub(crate) token: String,
     /// HTTP client used to send requests to the API.
     client: HyperClient<HttpsConnector<HttpConnector>>,
 }
@@ -107,7 +108,7 @@ impl Client {
     ///
     /// * `webhook_id` - ID of the Webhook.
     /// * `webhook_token` - Token of the Webhook.
-    pub fn new(webhook_id: &str, webhook_token: &str) -> Self {
+    pub(crate) fn new(webhook_id: &str, webhook_token: &str) -> Self {
         let connector = HttpsConnector::new();
         Self {
             id: webhook_id.to_string(),
@@ -129,7 +130,7 @@ impl Client {
     /// Method::DELETE, and Method::PATCH.
     /// * `endpoint` - Target endpoint to access.
     /// * `body` - HTTP Body to send to the API (used for POST and PATCH.)
-    pub async fn send(&self, method: Method, endpoint: &str, body: Body) -> Result<String> {
+    pub(crate) async fn send(&self, method: Method, endpoint: &str, body: Body) -> Result<String> {
         let url = format!("{}{}", self.url(), endpoint);
 
         // Build the request for the Method.
@@ -166,7 +167,7 @@ impl Client {
                 StatusCode::NO_CONTENT => Err(WebhookError::NoContent),
                 _ => {
                     let code = format!("Status Code: {}", value.status().as_u16());
-                    Err(WebhookError::BadStatus(format!("{}", code)))
+                    Err(WebhookError::BadStatus(code.to_string()))
                 }
             },
 

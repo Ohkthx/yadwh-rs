@@ -1,10 +1,10 @@
-//! WebhookAPI Client for interacting directly with the Discord API.
+//! WebhookApi Client for interacting directly with the Discord API.
 //!
 //! `webhook` bundles up the required authentication parameters and creates a HTTP client that is
 //! used to interact with the Discord API. All authentication for each request is handled for the user.
 
 use crate::client::{Client, Result, WebhookError};
-use crate::message::MessageAPI;
+use crate::message::MessageApi;
 use hyper::{Body, Method};
 use serde::{Deserialize, Serialize};
 
@@ -33,7 +33,7 @@ pub struct Webhook {
     pub url: String,
 }
 
-/// WebhookAPI is a client that is responsible for making requests to the Discord API.
+/// WebhookApi is a client that is responsible for making requests to the Discord API.
 /// Requires a webhook ID and Token. You can find these requirements in the URL provided for the
 /// webhook.
 ///
@@ -42,14 +42,14 @@ pub struct Webhook {
 /// URL Supplied: https://discord.com/api/webhooks/__111122223333__/**AAAABBBBCCCC**
 /// * Webhook ID: __111122223333__
 /// * Webhook Token: **AAAABBBBCCCC**
-pub struct WebhookAPI {
+pub struct WebhookApi {
     /// HTTP client used to send requests to the API.
     client: Client,
     /// HTTP client used to send requests to the API.
-    pub message: MessageAPI,
+    pub message: MessageApi,
 }
 
-impl WebhookAPI {
+impl WebhookApi {
     /// Creates a new webhook client used to send requests.
     ///
     /// # Arguments
@@ -58,8 +58,29 @@ impl WebhookAPI {
     /// * `webhook_token` - Token of the webhook.
     pub fn new(webhook_id: &str, webhook_token: &str) -> Self {
         let client: Client = Client::new(webhook_id, webhook_token);
-        let message: MessageAPI = MessageAPI::new(&client);
+        let message: MessageApi = MessageApi::new(&client);
         Self { client, message }
+    }
+
+    /// Parses a Discord webhook URL and creates a new `WebhookApi` client.
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The full URL of the webhook.
+    ///
+    /// # Returns
+    ///
+    /// A `WebhookApi` instance if the URL is valid, otherwise returns an error.
+    pub fn from_url(url: &str) -> Result<Self> {
+        let parts: Vec<&str> = url.split('/').collect();
+        if parts.len() < 7 {
+            return Err(WebhookError::BadParse("webhook url".to_string()));
+        }
+
+        let webhook_id = parts[parts.len() - 2];
+        let webhook_token = parts[parts.len() - 1];
+
+        Ok(Self::new(webhook_id, webhook_token))
     }
 
     /// Obtains an existing webhook. This will error if it no longer exists.

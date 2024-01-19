@@ -13,4 +13,4 @@ pub mod message;
 pub mod webhook;
 
 pub use crate::client::{Limit, Result, WebhookError};
-pub use crate::webhook::WebhookAPI;
+pub use crate::webhook::WebhookApi;

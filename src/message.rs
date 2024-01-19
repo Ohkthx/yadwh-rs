@@ -1,6 +1,6 @@
 //! Contains `MessageAPI`, which is used to create, get, edit, and delete messages.
 //!
-//! This is used by proxy in `WebhookAPI` to manage messages.
+//! This is used by proxy in `WebhookApi` to manage messages.
 
 use crate::client::{Client, Limit, Result, WebhookError};
 use crate::embed::Embed;
@@ -74,11 +74,11 @@ impl MessageBuilder {
     /// # Arguments
     ///
     /// * `message` - Message used to create the builder.
-    pub fn from(message: &Message) -> Self {
-        let mut builder = Self::new();
-        builder.content(&message.content).ok();
-        builder.embeds = message.embeds.clone();
-        builder
+    pub fn from(message: &Message) -> Result<Self> {
+        let builder = Self::new()
+            .content(&message.content)?
+            .embeds(&message.embeds);
+        Ok(builder)
     }
 
     /// Validates the entire embed does not exceed the maxmium lengths. Maximium length is availabe
@@ -128,7 +128,7 @@ impl MessageBuilder {
     /// # Arguments
     ///
     /// * `username` - Username to be display for the message, maximum length is `Limit::USERNAME`
-    pub fn username(&mut self, username: &str) -> Result<()> {
+    pub fn username(mut self, username: &str) -> Result<Self> {
         // Assign, but will not send if it is an error.
         self.username = Some(username.to_string());
 
@@ -141,7 +141,7 @@ impl MessageBuilder {
             ));
         };
 
-        Ok(())
+        Ok(self)
     }
 
     /// Adds content to the message. This will throw a `WebhookError::TooBig` if the content
@@ -150,7 +150,7 @@ impl MessageBuilder {
     /// # Arguments
     ///
     /// * `content` - String of content to be sent, maximum length is `Limit::CONTENT`
-    pub fn content(&mut self, content: &str) -> Result<()> {
+    pub fn content(mut self, content: &str) -> Result<Self> {
         // Assign, but will not send if it is an error.
         self.content = Some(content.to_string());
 
@@ -163,7 +163,7 @@ impl MessageBuilder {
             ));
         };
 
-        Ok(())
+        Ok(self)
     }
 
     /// Explictly sets TTS (Text-to-Speech) to either be `true` or `false`
@@ -171,13 +171,14 @@ impl MessageBuilder {
     /// # Arguments
     ///
     /// * `tts` - `true` or `false` to `enable` or `disable` TTS (Text-to-Speech.)
-    pub fn tts(&mut self, tts: bool) {
+    pub fn tts(mut self, tts: bool) -> Self {
         self.tts = Some(tts);
+        self
     }
 
     /// Creates a new embed to be added to the list of embeds to be sent. If you attempt to add
     /// more then 10 embeds, it will fail and only keep the first 10.
-    pub fn embed<Func>(&mut self, func: Func) -> &mut Self
+    pub fn embed<Func>(mut self, func: Func) -> Self
     where
         Func: Fn(&mut Embed) -> &mut Embed,
     {
@@ -189,19 +190,32 @@ impl MessageBuilder {
 
         self
     }
+
+    /// Adds additional embeds to the message. If you attempt to add
+    /// more then 10 embeds, it will fail and only keep the first 10.
+    pub fn embeds(mut self, embeds: &[Embed]) -> Self {
+        // Calculate the maximum number of new embeds that can be added.
+        let remaining_capacity = Limit::EMBEDS.saturating_sub(self.embeds.len());
+
+        // Extend the embeds vector with the allowed number of new embeds.
+        self.embeds
+            .extend(embeds.iter().take(remaining_capacity).cloned());
+
+        self
+    }
 }
 
 /// `MessageAPI` is used to negotiate `Message` related functions with the Discord API. This allows
 /// the user to **Create**, **Get**, **Edit**, and **Delete** messages sent by the webhook. This is
-/// accessed by proxy in `WebhookAPI`.
-pub struct MessageAPI {
+/// accessed by proxy in `WebhookApi`.
+pub struct MessageApi {
     /// HTTP client used to send requests to the API.
     client: Client,
 }
 
-impl MessageAPI {
+impl MessageApi {
     /// Creates a new instance of the MessageAPI by cloning a HTTP client provided by the calling
-    /// WebhookAPI.
+    /// WebhookApi.
     ///
     /// # Arguments
     ///

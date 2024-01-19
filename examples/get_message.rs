@@ -11,8 +11,9 @@
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
+
 use std::{env, process};
-use yadwh::webhook::WebhookAPI;
+use yadwh::webhook::WebhookApi;
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +32,7 @@ async fn main() {
 
     // Get the message.
     println!("Obtaining message {}.", message_id);
-    let webhook = WebhookAPI::new(&webhook_id, &token);
+    let webhook = WebhookApi::new(&webhook_id, &token);
     match webhook.message.get(&message_id).await {
         Ok(resp) => println!("\nMessage obtained:\n{:#?}", resp),
         Err(error) => println!("Error while obtaining: {}", error),
