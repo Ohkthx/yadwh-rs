@@ -11,8 +11,9 @@
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
 //!     Message ID: 22223333
+
 use std::{env, process};
-use yadwh::webhook::WebhookAPI;
+use yadwh::webhook::WebhookApi;
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +32,7 @@ async fn main() {
 
     // Delete the message.
     println!("Deleting message {}.", message_id);
-    let webhook = WebhookAPI::new(&webhook_id, &token);
+    let webhook = WebhookApi::new(&webhook_id, &token);
     match webhook.message.delete(&message_id).await {
         Ok(_) => println!("Deleted message {}", message_id),
         Err(error) => println!("Error while deleting: {}", error),

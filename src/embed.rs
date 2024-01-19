@@ -280,7 +280,7 @@ impl Embed {
         };
 
         // Convert the HEX color to u32.
-        let color_u32: u32 = match u32::from_str_radix(&color_hex, 16) {
+        let color_u32: u32 = match u32::from_str_radix(color_hex, 16) {
             Ok(value) => value,
             Err(_) => return self,
         };

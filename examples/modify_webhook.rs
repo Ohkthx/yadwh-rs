@@ -10,8 +10,9 @@
 //! where:
 //!     Webhook ID: 00001111
 //!     Token:      aaaabbbb
+
 use std::{env, process};
-use yadwh::webhook::WebhookAPI;
+use yadwh::webhook::WebhookApi;
 
 #[tokio::main]
 async fn main() {
@@ -29,7 +30,7 @@ async fn main() {
 
     // Get the webhook.
     println!("Obtaining webhook {}.", webhook_id);
-    let webhook = WebhookAPI::new(&webhook_id, &token);
+    let webhook = WebhookApi::new(&webhook_id, &token);
     let mut old = match webhook.get().await {
         Ok(resp) => {
             println!("Webhook obtained.");
